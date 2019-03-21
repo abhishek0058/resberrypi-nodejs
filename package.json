@@ -1,0 +1,16 @@
+{
+  "name": "node_pi",
+  "version": "1.0.0",
+  "description": "This is file for resberry pi for Laundry bay",
+  "main": "pi.js",
+  "scripts": {
+    "start": "nodemon pi.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "onoff": "^4.0.0",
+    "socket.io-client": "^2.2.0"
+  }
+}
