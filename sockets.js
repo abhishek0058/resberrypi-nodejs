@@ -26,12 +26,16 @@ socket.on('connect', function () {
 // Listening for machine start event from server
 socket.on('turn_machine_on', (payload) => {
     const { channel, user, cycle_time } = payload;
+    console.log("payload", payload);
+
     if(!channel || !user || !cycle_time) {
         socket.emit("error", payload);
+        console.log("error");
         return;
     }
     if(channel == state._channel) {
         // If channel found, store the user and start timer
+        gpioInterface.usePin(pins[18], 1);
         this.state['user'] = user;
         startTimer(cycle_time);
     }
@@ -56,17 +60,21 @@ function reduceOneSecond(timeObj) {
 
 
 function startTimer(cycle_time = 90) {
+    console.log("start timer", cycle_time);
     // Making timeObj
     let timeObj = { min: cycle_time, sec: 0 };
     // Saving time object in the global state
     this.state['timer'] = timeObj;
 
     intervalId = setInterval(() => {
+        console.log("timeObj", timeObj);
         // Checking if its time to stop machine
         if(timeObj.min == 0 && timeObj.sec == 0) {
             // clearing interval
             clearInterval(intervalId);
             // Stopping machine event
+            console.log("stopping machine", timeObj);
+            gpioInterface.usePin(pins[18], 0);
             socket.emit("machine_stopped", { channel, user });
             // reseting global state
             intervalId = null;
@@ -78,6 +86,7 @@ function startTimer(cycle_time = 90) {
             // update the global state
             this.state['timer'] = timeObj;
             // emit the new timer
+            console.log("sending tick");
             socket.emit('tick', { channel, timer });
         }
     }, 1000);
@@ -89,6 +98,8 @@ function restartTimer(timeObj) {
     intervalId = setInterval(() => {
         // Checking if its time to stop machine
         if(timeObj.min == 0 && timeObj.sec == 0) {
+            console.log("stopping machine", timeObj);
+            gpioInterface.usePin(pins[18], 0);
             // clearing interval
             clearInterval(intervalId);
             // Stopping machine event
@@ -103,6 +114,7 @@ function restartTimer(timeObj) {
             // update the global state
             this.state['timer'] = timeObj;
             // emit the new timer
+            console.log("sending tick");
             socket.emit('tick', { channel, timer });
         }
     }, 1000);
