@@ -33,11 +33,13 @@ socket.on('turn_machine_on', (payload) => {
         console.log("error");
         return;
     }
-    if(channel == state._channel) {
+    console.log("checking channel", channel == _channel);
+    if(channel == _channel) {
         // If channel found, store the user and start timer
+        console.log("channel matched", _channel);
         gpioInterface.usePin(pins[18], 1);
-        this.state['user'] = user;
-        startTimer(cycle_time);
+        state['user'] = user;
+        startTimer(cycle_time, user);
     }
 });
 
@@ -59,12 +61,12 @@ function reduceOneSecond(timeObj) {
 }
 
 
-function startTimer(cycle_time = 90) {
+function startTimer(cycle_time = 90, user) {
     console.log("start timer", cycle_time);
     // Making timeObj
     let timeObj = { min: cycle_time, sec: 0 };
     // Saving time object in the global state
-    this.state['timer'] = timeObj;
+    state['timer'] = timeObj;
 
     intervalId = setInterval(() => {
         console.log("timeObj", timeObj);
@@ -75,23 +77,23 @@ function startTimer(cycle_time = 90) {
             // Stopping machine event
             console.log("stopping machine", timeObj);
             gpioInterface.usePin(pins[18], 0);
-            socket.emit("machine_stopped", { channel, user });
+            socket.emit("machine_stopped", { _channel });
             // reseting global state
             intervalId = null;
-            this.state = { timer: null, user: null };
+            state = { timer: null, user: null };
         }
         else {
             // If time has left, reduce one second
             timeObj = reduceOneSecond(timeObj);
             // update the global state
-            this.state['timer'] = timeObj;
+            state['timer'] = timeObj;
             // emit the new timer
             console.log("sending tick");
-            socket.emit('tick', { channel, timer });
+            socket.emit('tick', { _channel, timeObj });
         }
     }, 1000);
     // emit event that machine has started
-    socket.emit("machine_started", { channel, user, timeObj });
+    socket.emit("machine_started", { _channel, user, timeObj });
 }
 
 function restartTimer(timeObj) {
@@ -103,19 +105,19 @@ function restartTimer(timeObj) {
             // clearing interval
             clearInterval(intervalId);
             // Stopping machine event
-            socket.emit("machine_stopped", { channel, user });
+            socket.emit("machine_stopped", { _channel });
             // reseting global state
             intervalId = null;
-            this.state = { timer: null, user: null };
+            state = { timer: null, user: null };
         }
         else {
             // If time has left, reduce one second
             timeObj = reduceOneSecond(timeObj);
             // update the global state
-            this.state['timer'] = timeObj;
+            state['timer'] = timeObj;
             // emit the new timer
             console.log("sending tick");
-            socket.emit('tick', { channel, timer });
+            socket.emit('tick', { _channel, timeObj });
         }
     }, 1000);
 }
