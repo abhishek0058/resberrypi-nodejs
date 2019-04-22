@@ -15,7 +15,7 @@ gpioInterface.usePin(pins[18], 0);
 let intervalId = null;
 
 // The state object to keep user and timer
-const state = { user: null, timer: null };
+let state = { user: null, timer: null };
 
 socket.on('connect', function () {
     // registering machine as active
@@ -45,6 +45,9 @@ socket.on('turn_machine_on', (payload) => {
 
 socket.on('disconnect', function () {
     console.log("disconnected from the server");
+    clearInterval(intervalId);
+    intervalId = null;
+    state = { user: null, timer: null };
 });
 
 function reduceOneSecond(timeObj) {
@@ -80,7 +83,8 @@ function startTimer(cycle_time = 90, user) {
             socket.emit("machine_stopped", { _channel });
             // reseting global state
             intervalId = null;
-            state = { timer: null, user: null };
+            state['timer'] = null;
+            state['user'] = null;
         }
         else {
             // If time has left, reduce one second
@@ -108,7 +112,8 @@ function restartTimer(timeObj) {
             socket.emit("machine_stopped", { _channel });
             // reseting global state
             intervalId = null;
-            state = { timer: null, user: null };
+            state['timer'] = null;
+            state['user'] = null;
         }
         else {
             // If time has left, reduce one second
@@ -127,7 +132,8 @@ socket.on('reset_previouse_state', payload => {
     const { channel, user, timer } = payload;
     if(channel == _channel) {
         // saving info in global state
-        this.state = { user, timer };
+        state['timer'] = timer;
+        state['user'] = user;
         // starting current 'ON' PIN 18
         gpioInterface.usePin(pins[18], 1);
         restartTimer(timer);
