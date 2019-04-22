@@ -19,7 +19,8 @@ let state = { user: null, timer: null };
 
 socket.on('connect', function () {
     // registering machine as active
-    socket.emit("registerMachine", { _channel });
+    const { timer } = state;
+    socket.emit("registerMachine", { _channel, timeObj: timer });
     console.log("emitting accessibility status");
 });
 
