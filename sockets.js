@@ -24,6 +24,14 @@ socket.on('connect', function () {
     console.log("emitting accessibility status");
 });
 
+socket.on('ping', function(payload) {
+    const { channel } = payload;
+    if(channel == _channel) {
+        const { timer } = state;
+        socket.emit("registerMachine", { _channel, timeObj: timer });
+    }
+});
+
 // Listening for machine start event from server
 socket.on('turn_machine_on', (payload) => {
     const { channel, user, cycle_time } = payload;
@@ -46,9 +54,6 @@ socket.on('turn_machine_on', (payload) => {
 
 socket.on('disconnect', function () {
     console.log("disconnected from the server");
-    clearInterval(intervalId);
-    intervalId = null;
-    state = { user: null, timer: null };
 });
 
 function reduceOneSecond(timeObj) {

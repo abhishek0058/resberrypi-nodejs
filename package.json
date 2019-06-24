@@ -1,10 +1,10 @@
 {
   "name": "node_pi",
   "version": "1.0.0",
-  "description": "This is file for resberry pi for Laundry bay",
+  "description": "This is file for raspberry pi for Laundry bay",
   "main": "pi.js",
   "scripts": {
-    "start": "nodemon pi.js"
+    "start": "node pi.js"
   },
   "author": "",
   "license": "ISC",
